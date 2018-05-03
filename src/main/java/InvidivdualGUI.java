@@ -85,7 +85,7 @@ public class InvidivdualGUI  extends JFrame{
         directorLabel.setText("Director:" +movie.getDirector());
         actorsLabel.setText("Actors: " +movie.getActors());
         imdbLabel.setText("IMDB id: "+imdb);
-        plotLabel.setText("Plot: " + movie.getPlot());
+        //plotLabel.setText("Plot: " + movie.getPlot());
 
     }
 

@@ -1,4 +1,3 @@
-import netscape.javascript.JSObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,6 +12,11 @@ public class API {
     String imdbURL = "http://www.omdbapi.com/?apikey=4efcd7de&i=";
 
     ArrayList<Movie> searchMovies(String name) {
+//        String[] nameSep = name.split("");
+//        String actualName;
+//        for (String s: nameSep){
+//            actualName+=s
+//        }
         String url = baseURL+name;
         ArrayList<Movie> allMovies = new ArrayList<>();
         try {
