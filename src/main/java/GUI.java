@@ -1,9 +1,7 @@
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 public class GUI extends JFrame{
@@ -17,6 +15,7 @@ public class GUI extends JFrame{
     private JButton myMoviesSearchButton;
     private JTextField myMoviesSearchTextField;
     private JTable myMoviesTable;
+    private JButton deleteButton;
     DefaultTableModel searchListTableModel;
     DefaultListModel<Movie> searchListDefaultListModel;
     DefaultTableModel myMoviesTableModel;
@@ -25,17 +24,20 @@ public class GUI extends JFrame{
     API api;
 
     GUI(){
+        // setting the default settings of the gui
         setContentPane(mainPanel);
         pack();
         setVisible(true);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(400,400);
+        setResizable(false);
         db = new DB();
         api = new API();
 
         searchListTableModel = new DefaultTableModel();
 
         searchListDefaultListModel = new DefaultListModel<>();
-        // adding the columns
+        // adding the columns to both tables
         searchListTableModel.addColumn("Title");
         searchListTableModel.addColumn("Year");
         searchListTableModel.addColumn("IMDB");
@@ -47,7 +49,7 @@ public class GUI extends JFrame{
         myMoviesTableModel.addColumn("Year");
         myMoviesTableModel.addColumn("IMDB");
 
-        setMyMoviesData();
+
 
         myMoviesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         myMoviesTable.setModel(myMoviesTableModel);
@@ -59,10 +61,18 @@ public class GUI extends JFrame{
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String query = searchTextField.getText();
-                if (query.length() !=0){
-                    ArrayList<Movie> movies = api.searchMovies(query);
-                    setSearchData(movies);
+                // checking the the search text field is empty
+                if (searchTextField.getText().length() != 0) {
+                    // formating for a link
+                    String query = searchTextField.getText().replace(" ", "+");
+                    if (query.length() != 0) {
+                        // querying the api for the movie name
+                        ArrayList<Movie> movies = api.searchMovies(query);
+                        //refreshing the list
+                        setSearchData(movies);
+                    }
+                }else {
+                    showAlertDialog("Please enter a search.");
                 }
             }
         });
@@ -70,20 +80,51 @@ public class GUI extends JFrame{
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
+                // getting the selected row
                 int a = searchTable.getSelectedRow();
+                //getting the imdb from the table
                 String imdb = searchTable.getModel().getValueAt(a, 2).toString();
+                // starting the individual gui
                 InvidivdualGUI invidivdualGUI = new InvidivdualGUI(imdb);
+                // refreshing the table
                 setMyMoviesData();
+                myMoviesTableModel.fireTableDataChanged();
             }
         });
         myMoviesTable.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 super.mouseClicked(e);
                 int a = myMoviesTable.getSelectedRow();
+                // waiting for a double click to open an individual window
+                if (a != -1 && e.getClickCount() ==2) {
+                    String imdb = myMoviesTable.getModel().getValueAt(a, 2).toString();
+                    Movie movie = db.getMovie(imdb);
+                    InvidivdualGUI invidivdualGUI = new InvidivdualGUI(movie);
+                }
+            }
+        });
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int a = myMoviesTable.getSelectedRow();
                 String imdb = myMoviesTable.getModel().getValueAt(a, 2).toString();
-                Movie movie = db.getMovie(imdb);
-                InvidivdualGUI invidivdualGUI = new InvidivdualGUI(movie);
+                // deleting item from table
+                db.deleteItem(imdb);
+                setMyMoviesData();
+                myMoviesTableModel.fireTableDataChanged();
+                showAlertDialog("Movie deleted");
+
+            }
+        });
+
+
+        searchTab.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                // listener to refresh lists
+                setMyMoviesData();
             }
         });
     }
@@ -92,7 +133,8 @@ public class GUI extends JFrame{
         // loading data from db
         myMoviesTableModel.setRowCount(0);
         try {
-            ArrayList<Movie> data = db.getAll();
+            DB db1 = new DB();
+            ArrayList<Movie> data = db1.getAll();
 
             if (data.size() != 0) {
 
@@ -115,5 +157,8 @@ public class GUI extends JFrame{
                 searchListTableModel.addRow(new String[]{movie.getTitle(), Integer.toString(movie.getReleaseYear()), movie.getImdb()});
             }
         }
+    }
+    protected void showAlertDialog(String message) {
+        JOptionPane.showMessageDialog(this, message);
     }
 }

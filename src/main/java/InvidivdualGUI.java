@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
+import java.security.Guard;
 import java.util.ArrayList;
 
 public class InvidivdualGUI  extends JFrame{
@@ -20,22 +21,28 @@ public class InvidivdualGUI  extends JFrame{
     private JLabel plotLabel;
     private JTextArea reviewTextArea;
     private JButton saveButton;
+    private JTextArea plotTextArea;
     DB db;
     API api;
     Movie movie;
+    GUI gui;
 
+    // GUI from search table based on IMDB
     InvidivdualGUI(String imdb1){
 
         setContentPane(mainPanel);
         pack();
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(1000,500);
+        setResizable(false);
         db = new DB();
         api = new API();
 
+        // loads all the elements from the API
         setElements(imdb1);
 
-
+        // saves data to db
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -46,13 +53,30 @@ public class InvidivdualGUI  extends JFrame{
         });
     }
 
+    // loads data from the DB
     InvidivdualGUI(Movie movie){
         setContentPane(mainPanel);
         pack();
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(1000,500);
+        setResizable(false);
         db = new DB();
         api = new API();
+
+        //loading all the data
+        setElementsDB(movie);
+        // updates data to the DB
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String review = reviewTextArea.getText();
+                db.updateData(review,movie.getImdb());
+                showAlertDialog("Movie saved to database!");
+                gui.setMyMoviesData();
+                gui.myMoviesTableModel.fireTableDataChanged();
+            }
+        });
 
     }
 
@@ -85,8 +109,20 @@ public class InvidivdualGUI  extends JFrame{
         directorLabel.setText("Director:" +movie.getDirector());
         actorsLabel.setText("Actors: " +movie.getActors());
         imdbLabel.setText("IMDB id: "+imdb);
-        //plotLabel.setText("Plot: " + movie.getPlot());
+        plotTextArea.setText(movie.getPlot());
 
+    }
+
+    void setElementsDB(Movie movie){
+        setImage(movie.getPic());
+        titleLabel.setText(movie.getTitle());
+        releaseYearLabel.setText("Release: " +Integer.toString(movie.getReleaseYear()));
+        ratingLabel.setText("Rating: " +Double.toString(movie.getRating()));
+        directorLabel.setText("Director:" +movie.getDirector());
+        actorsLabel.setText("Actors: " +movie.getActors());
+        imdbLabel.setText("IMDB id: "+movie.getImdb());
+        plotTextArea.setText(movie.getPlot());
+        reviewTextArea.setText(movie.getReview());
     }
 
     protected void showAlertDialog(String message) {

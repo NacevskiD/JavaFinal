@@ -17,6 +17,7 @@ public class DB {
         createTable();
     }
 
+    // creates the table
     private void createTable(){
 
         try(Connection connection = DriverManager.getConnection(db_url)){
@@ -30,6 +31,7 @@ public class DB {
 
     }
 
+    // adding a movie to the DB
     void addData(String title, int yr,double rating, String review, String diretor,String actors, String imdb,String plot,String pic){
         try(Connection connection = DriverManager.getConnection(db_url)){
             PreparedStatement ps = connection.prepareStatement(ADD_DATA);
@@ -52,6 +54,7 @@ public class DB {
         }
     }
 
+    // getting all the movies from the DB
     ArrayList<Movie> getAll(){
         final String getAllSQL = "SELECT * FROM movies";
         ArrayList<Movie> list = new ArrayList<>();
@@ -72,7 +75,7 @@ public class DB {
                             rs.getString("pic"));
                     list.add(movie);
                 }
-
+                // returns a list of movie objects
                 return list;
             }
 
@@ -83,14 +86,15 @@ public class DB {
             return null;
         }
     }
-    void updateData(String review,int imdb){
+    // updates any reviews
+    void updateData(String review,String imdb){
         String updateReview = "UPDATE movies SET review = ? WHERE imdb = ?";
 
         try(Connection connection = DriverManager.getConnection(db_url)){
             PreparedStatement ps = connection.prepareStatement(updateReview);
 
             ps.setString(1,review);
-            ps.setInt(2,imdb);
+            ps.setString(2,imdb);
 
             ps.executeUpdate();
 
@@ -102,6 +106,7 @@ public class DB {
         }
 
     }
+    // deletes a movie from the DB
     void deleteItem(String imdb){
         String deleteMovie = "DELETE FROM movies WHERE imdb = ?";
 
@@ -120,14 +125,16 @@ public class DB {
 
         }
     }
-
+    // getting individual movie
     Movie getMovie(String imdb){
-        String deleteMovie = "SELECT FROM movies WHERE imdb = ?";
+        String getMovie = "SELECT * FROM movies WHERE imdb = ?";
 
         try(Connection connection = DriverManager.getConnection(db_url)){
-            PreparedStatement ps = connection.prepareStatement(deleteMovie);
+            PreparedStatement ps = connection.prepareStatement(getMovie);
 
             ArrayList<Movie> movieList = new ArrayList<>();
+
+            ps.setString(1,imdb);
 
 
             ResultSet rs = ps.executeQuery();
@@ -135,7 +142,8 @@ public class DB {
 
             while (rs.next()){
                 Movie movie = new Movie(rs.getString("title"),rs.getInt("yr"),rs.getDouble("rating"),
-                        rs.getString("review"),rs.getString("director"),rs.getString("actors"),rs.getString("imdb"),rs.getString("plot"),
+                        rs.getString("review"),rs.getString("director"),rs.getString("actors"),rs.getString("imdb"),
+                        rs.getString("plot"),
                         rs.getString("pic"));
                 movieList.add(movie);
             }
@@ -143,7 +151,7 @@ public class DB {
             return movieList.get(0);
 
         }catch (SQLException sqle){
-            System.out.println("SQL EXCEPTION");
+            System.out.println(sqle);
             return null;
         }
     }

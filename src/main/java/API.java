@@ -17,6 +17,7 @@ public class API {
 //        for (String s: nameSep){
 //            actualName+=s
 //        }
+        // adding the search to the url
         String url = baseURL+name;
         ArrayList<Movie> allMovies = new ArrayList<>();
         try {
@@ -41,6 +42,7 @@ public class API {
             JSONObject jsonObject = new JSONObject(responseString);
             JSONArray jsonArray = jsonObject.getJSONArray("Search");
             System.out.println(jsonArray);
+            // getting the data from the json array
             for (int x =0; x < jsonArray.length();x++){
                 JSONObject movie = jsonArray.getJSONObject(x);
                 if (movie.getString("Type").equalsIgnoreCase("movie")) {
@@ -56,6 +58,7 @@ public class API {
         }
     }
 
+    // getting individual movie
     Movie getMovie(String imdb){
         String url = imdbURL+imdb;
         try {
@@ -84,8 +87,9 @@ public class API {
                 actor.append(a+", ");
             }
 
+            // getting movie details
             Movie movie = new Movie(jsonObject.getString("Title"),jsonObject.getInt("Year"),jsonObject.getDouble("imdbRating"),
-                    "",jsonObject.getString("Director"),actors.toString(),jsonObject.getString("imdbID"),jsonObject.getString("Plot"),jsonObject.getString("Poster"));
+                    "",jsonObject.getString("Director"),actor.toString(),jsonObject.getString("imdbID"),jsonObject.getString("Plot"),jsonObject.getString("Poster"));
 
             return movie;
 
